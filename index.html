@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>わたしの家計簿</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 15px;
+    color: #333;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* 日付 */
+
+.date-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.date-navigation button {
+    width: auto;
+    padding: 10px 14px;
+    background: white;
+    color: #333;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+.current-date {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+}
+
+
+/* カード */
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 15px;
+}
+
+
+/* 支出 */
+
+.expense {
+    border-bottom: 1px solid #ddd;
+    padding: 15px 0;
+}
+
+.expense:last-child {
+    border-bottom: none;
+}
+
+.place {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.amount {
+    font-size: 23px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.detail {
+    color: #666;
+    line-height: 1.6;
+}
+
+.total {
+    text-align: right;
+    font-size: 21px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+
+/* ボタン */
+
+button {
+    width: 100%;
+    padding: 14px;
+    font-size: 17px;
+    border: none;
+    border-radius: 10px;
+    background: #333;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+
+/* 入力フォーム */
+
+.form-area {
+    display: none;
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 13px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.register-button {
+    margin-top: 20px;
+}
+
+.cancel-button {
+    margin-top: 10px;
+    background: #999;
+}
+
+
+/* 週間集計 */
+
+.week-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.week-total {
+    border-top: 2px solid #333;
+    margin-top: 10px;
+    padding-top: 15px;
+    font-size: 21px;
+    font-weight: bold;
+    text-align: right;
+}
+
+.week-budget {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    line-height: 1.8;
+}
+
+.remaining {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.warning {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+<h1>わたしの家計簿</h1>
+
+
+<!-- 日付 -->
+
+<div class="date-navigation">
+
+<button onclick="changeDate(-1)">
+← 前の日
+</button>
+
+<div
+class="current-date"
+id="currentDate">
+</div>
+
+<button onclick="changeDate(1)">
+次の日 →
+</button>
+
+</div>
+
+
+<!-- 今日の支出 -->
+
+<div class="card">
+
+<h2>支出</h2>
+
+<div id="expenseList"></div>
+
+<div class="total">
+
+合計 ¥<span id="todayTotal">0</span>
+
+</div>
+
+</div>
+
+
+<!-- 支出追加 -->
+
+<div class="card">
+
+<button onclick="showForm()">
+＋ 支出を追加
+</button>
+
+
+<div
+class="form-area"
+id="formArea">
+
+<h2>支出を追加</h2>
+
+
+<label>どこで？</label>
+
+<input
+type="text"
+id="place"
+placeholder="例：セブンイレブン"
+>
+
+
+<label>いくら？</label>
+
+<input
+type="number"
+id="amount"
+placeholder="例：180"
+>
+
+
+<label>何に？</label>
+
+<input
+type="text"
+id="description"
+placeholder="例：おにぎり"
+>
+
+
+<label>支払い方法</label>
+
+<select id="payment">
+
+<option>現金</option>
+
+<option>クレジットカード</option>
+
+<option>PayPay</option>
+
+<option>スタバカード</option>
+
+<option>福岡空港Pay</option>
+
+<option>その他</option>
+
+</select>
+
+
+<label>カテゴリー</label>
+
+<select id="category">
+
+<option>食費</option>
+
+<option>外食費</option>
+
+<option>交通費</option>
+
+<option>日用品</option>
+
+<option>自己投資</option>
+
+<option>旅行</option>
+
+<option>その他</option>
+
+</select>
+
+
+<button
+class="register-button"
+onclick="addExpense()">
+
+登録する
+
+</button>
+
+
+<button
+class="cancel-button"
+onclick="hideForm()">
+
+キャンセル
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- 週間集計 -->
+
+<div class="card">
+
+<h2>今週の支出</h2>
+
+<p id="weekPeriod"></p>
+
+<div id="weekList"></div>
+
+
+<div class="week-total">
+
+週間合計 ¥
+<span id="weekTotal">0</span>
+
+</div>
+
+
+<div class="week-budget">
+
+基本週間予算 ¥30,000
+
+<br>
+
+今週の予算 ¥
+<span id="weekBudget">30,000</span>
+
+<br>
+
+<div class="remaining">
+
+残り ¥
+<span id="weekRemaining">30,000</span>
+
+</div>
+
+<div
+class="warning"
+id="budgetWarning">
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+
+/* =================================
+   データ
+================================= */
+
+let expenses =
+JSON.parse(
+    localStorage.getItem("expenses")
+) || [];
+
+
+/* =================================
+   表示中の日付
+================================= */
+
+let currentDate =
+new Date("2026-08-29T00:00:00");
+
+
+/* =================================
+   基本週間予算
+================================= */
+
+const BASE_BUDGET = 30000;
+
+
+/* =================================
+   日付 → 文字列
+================================= */
+
+function dateToString(date) {
+
+    const year =
+        date.getFullYear();
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+
+/* =================================
+   日本語の日付
+================================= */
+
+function displayDate(date) {
+
+    const weekDays = [
+        "日",
+        "月",
+        "火",
+        "水",
+        "木",
+        "金",
+        "土"
+    ];
+
+    return `${date.getFullYear()}年${
+        date.getMonth() + 1
+    }月${
+        date.getDate()
+    }日（${
+        weekDays[date.getDay()]
+    }）`;
+
+}
+
+
+/* =================================
+   日付変更
+================================= */
+
+function changeDate(number) {
+
+    currentDate.setDate(
+        currentDate.getDate() + number
+    );
+
+    displayAll();
+
+}
+
+
+/* =================================
+   フォーム
+================================= */
+
+function showForm() {
+
+    document.getElementById(
+        "formArea"
+    ).style.display = "block";
+
+}
+
+
+function hideForm() {
+
+    document.getElementById(
+        "formArea"
+    ).style.display = "none";
+
+}
+
+
+/* =================================
+   支出追加
+================================= */
+
+function addExpense() {
+
+    const place =
+        document.getElementById(
+            "place"
+        ).value;
+
+    const amount =
+        Number(
+            document.getElementById(
+                "amount"
+            ).value
+        );
+
+    const description =
+        document.getElementById(
+            "description"
+        ).value;
+
+    const payment =
+        document.getElementById(
+            "payment"
+        ).value;
+
+    const category =
+        document.getElementById(
+            "category"
+        ).value;
+
+
+    if (
+        !place ||
+        !amount ||
+        !description
+    ) {
+
+        alert(
+            "「どこで？」「いくら？」「何に？」を入力してください。"
+        );
+
+        return;
+
+    }
+
+
+    expenses.push({
+
+        date:
+            dateToString(
+                currentDate
+            ),
+
+        place:
+            place,
+
+        amount:
+            amount,
+
+        description:
+            description,
+
+        payment:
+            payment,
+
+        category:
+            category
+
+    });
+
+
+    /* 保存 */
+
+    localStorage.setItem(
+        "expenses",
+        JSON.stringify(
+            expenses
+        )
+    );
+
+
+    /* 入力欄をリセット */
+
+    document.getElementById(
+        "place"
+    ).value = "";
+
+    document.getElementById(
+        "amount"
+    ).value = "";
+
+    document.getElementById(
+        "description"
+    ).value = "";
+
+
+    hideForm();
+
+    displayAll();
+
+}
+
+
+/* =================================
+   今日の支出
+================================= */
+
+function displayToday() {
+
+    const date =
+        dateToString(
+            currentDate
+        );
+
+
+    const todayExpenses =
+        expenses.filter(
+            expense =>
+                expense.date === date
+        );
+
+
+    const expenseList =
+        document.getElementById(
+            "expenseList"
+        );
+
+    expenseList.innerHTML = "";
+
+
+    let total = 0;
+
+
+    todayExpenses.forEach(
+        expense => {
+
+            const newExpense =
+                document.createElement(
+                    "div"
+                );
+
+            newExpense.className =
+                "expense";
+
+
+            newExpense.innerHTML = `
+
+                <div class="place">
+                    ${expense.place}
+                </div>
+
+                <div class="amount">
+                    ¥${expense.amount.toLocaleString()}
+                </div>
+
+                <div class="detail">
+                    ${expense.description}<br>
+                    ${expense.payment}
+                    ｜ 
+                    ${expense.category}
+                </div>
+
+            `;
+
+
+            expenseList.appendChild(
+                newExpense
+            );
+
+
+            total +=
+                expense.amount;
+
+        }
+    );
+
+
+    document.getElementById(
+        "todayTotal"
+    ).textContent =
+        total.toLocaleString();
+
+}
+
+
+/* =================================
+   その週の日曜日を取得
+================================= */
+
+function getSunday(date) {
+
+    const sunday =
+        new Date(date);
+
+    sunday.setDate(
+        date.getDate() -
+        date.getDay()
+    );
+
+    return sunday;
+
+}
+
+
+/* =================================
+   その週の支出
+================================= */
+
+function getWeekTotal(date) {
+
+    const sunday =
+        getSunday(date);
+
+    const saturday =
+        new Date(sunday);
+
+    saturday.setDate(
+        sunday.getDate() + 6
+    );
+
+
+    return expenses
+
+        .filter(expense => {
+
+            const expenseDate =
+                new Date(
+                    expense.date +
+                    "T00:00:00"
+                );
+
+            return (
+                expenseDate >= sunday &&
+                expenseDate <= saturday
+            );
+
+        })
+
+        .reduce(
+            (sum, expense) =>
+                sum + expense.amount,
+            0
+        );
+
+}
+
+
+/* =================================
+   前週の支出
+================================= */
+
+function getPreviousWeekTotal(date) {
+
+    const sunday =
+        getSunday(date);
+
+
+    const previousSunday =
+        new Date(sunday);
+
+    previousSunday.setDate(
+        sunday.getDate() - 7
+    );
+
+
+    const previousSaturday =
+        new Date(previousSunday);
+
+    previousSaturday.setDate(
+        previousSunday.getDate() + 6
+    );
+
+
+    return expenses
+
+        .filter(expense => {
+
+            const expenseDate =
+                new Date(
+                    expense.date +
+                    "T00:00:00"
+                );
+
+            return (
+                expenseDate >=
+                    previousSunday &&
+
+                expenseDate <=
+                    previousSaturday
+            );
+
+        })
+
+        .reduce(
+            (sum, expense) =>
+                sum + expense.amount,
+            0
+        );
+
+}
+
+
+/* =================================
+   今週の予算
+================================= */
+
+function getCurrentWeekBudget(date) {
+
+    const previousWeekTotal =
+        getPreviousWeekTotal(date);
+
+
+    const overAmount =
+        Math.max(
+            0,
+            previousWeekTotal -
+            BASE_BUDGET
+        );
+
+
+    return BASE_BUDGET -
+        overAmount;
+
+}
+
+
+/* =================================
+   週間表示
+================================= */
+
+function displayWeek() {
+
+    const sunday =
+        getSunday(
+            currentDate
+        );
+
+
+    const weekDates = [];
+
+
+    for (
+        let i = 0;
+        i < 7;
+        i++
+    ) {
+
+        const date =
+            new Date(sunday);
+
+        date.setDate(
+            sunday.getDate() + i
+        );
+
+        weekDates.push(
+            date
+        );
+
+    }
+
+
+    const weekList =
+        document.getElementById(
+            "weekList"
+        );
+
+    weekList.innerHTML = "";
+
+
+    let weekTotal = 0;
+
+
+    const weekDays = [
+        "日",
+        "月",
+        "火",
+        "水",
+        "木",
+        "金",
+        "土"
+    ];
+
+
+    weekDates.forEach(
+        date => {
+
+            const dateString =
+                dateToString(
+                    date
+                );
+
+
+            const dayTotal =
+                expenses
+
+                .filter(
+                    expense =>
+                        expense.date ===
+                        dateString
+                )
+
+                .reduce(
+                    (
+                        sum,
+                        expense
+                    ) =>
+                        sum +
+                        expense.amount,
+
+                    0
+                );
+
+
+            weekTotal +=
+                dayTotal;
+
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "week-row";
+
+
+            row.innerHTML = `
+
+                <span>
+                    ${date.getMonth() + 1}/
+                    ${date.getDate()}
+                    （${weekDays[date.getDay()]}）
+                </span>
+
+                <span>
+                    ¥${dayTotal.toLocaleString()}
+                </span>
+
+            `;
+
+
+            weekList.appendChild(
+                row
+            );
+
+        }
+    );
+
+
+    /* 週間合計 */
+
+    document.getElementById(
+        "weekTotal"
+    ).textContent =
+        weekTotal.toLocaleString();
+
+
+    /* 週間予算 */
+
+    const budget =
+        getCurrentWeekBudget(
+            currentDate
+        );
+
+
+    document.getElementById(
+        "weekBudget"
+    ).textContent =
+        budget.toLocaleString();
+
+
+    /* 残り */
+
+    const remaining =
+        budget -
+        weekTotal;
+
+
+    document.getElementById(
+        "weekRemaining"
+    ).textContent =
+        remaining.toLocaleString();
+
+
+    /* オーバー表示 */
+
+    const warning =
+        document.getElementById(
+            "budgetWarning"
+        );
+
+
+    if (remaining < 0) {
+
+        warning.textContent =
+            "⚠️ 予算オーバー ¥" +
+            Math.abs(
+                remaining
+            ).toLocaleString();
+
+    } else {
+
+        warning.textContent = "";
+
+    }
+
+
+    /* 期間 */
+
+    document.getElementById(
+        "weekPeriod"
+    ).textContent =
+
+        `${
+            sunday.getMonth() + 1
+        }/${
+            sunday.getDate()
+        } 〜 ${
+            weekDates[6].getMonth() + 1
+        }/${
+            weekDates[6].getDate()
+        }`;
+
+}
+
+
+/* =================================
+   全画面更新
+================================= */
+
+function displayAll() {
+
+    document.getElementById(
+        "currentDate"
+    ).textContent =
+        displayDate(
+            currentDate
+        );
+
+
+    displayToday();
+
+    displayWeek();
+
+}
+
+
+/* =================================
+   最初に表示
+================================= */
+
+displayAll();
+
+</script>
+
+</body>
+</html>
