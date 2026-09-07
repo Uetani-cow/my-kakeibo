@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>バフェットの知恵袋</title>
+
+
+<style>
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:#f3f4f6;margin:0;padding:10px 9px 86px;color:#222}
+.container{width:100%;max-width:560px;margin:auto}
+h1{text-align:center;font-size:23px;margin:7px 0 14px}
+h2{font-size:18px;margin:0}
+h3{font-size:15px;margin:16px 0 7px}
+.card{background:#fff;border-radius:14px;padding:15px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+button{width:100%;min-height:44px;border:0;border-radius:10px;background:#333;color:#fff;font-size:15px;padding:10px;cursor:pointer}
+.date-navigation{display:grid;grid-template-columns:72px 1fr 72px;gap:6px;align-items:center;margin-bottom:8px}
+.date-navigation button{background:#fff;color:#333;border:1px solid #ddd;font-size:13px;padding:8px 3px}
+.current-date{text-align:center;font-weight:700;font-size:16px;white-space:nowrap}
+.date-tools{display:grid;grid-template-columns:70px 1fr;gap:7px;margin-bottom:11px}
+.date-tools .today-button{width:100%;background:#333}
+.calendar-label{display:none}
+#calendarPicker{width:100%;min-height:44px;padding:9px;border:1px solid #ddd;border-radius:9px;background:#fff;font-size:16px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.expense,.income{padding:12px 0;border-bottom:1px solid #eee}
+.expense:last-child,.income:last-child{border-bottom:0}
+.place{font-size:16px;font-weight:700}
+.amount{font-size:20px;font-weight:800;margin:2px 0 3px}
+.detail{font-size:13px;color:#666;line-height:1.5}
+.total{text-align:right;border-top:1px solid #eee;padding-top:9px;margin-top:8px;font-size:17px;font-weight:800}
+.expense-actions,.income-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.expense-actions button,.income-actions button{min-height:37px;font-size:13px;padding:7px}
+.edit-button{background:#666}.delete-button{background:#aaa}
+.form-area{display:none;border-top:1px solid #eee;margin-top:12px;padding-top:3px}
+label{display:block;font-size:14px;font-weight:700;margin:12px 0 5px}
+input,select{width:100%;min-height:44px;padding:9px 10px;border:1px solid #d5d5d5;border-radius:9px;background:#fff;font-size:16px}
+.week-period{font-size:13px;color:#777;margin:4px 0 7px}
+.week-row{display:flex;justify-content:space-between;padding:6px 1px;font-size:14px}
+.week-total{border-top:2px solid #333;margin-top:7px;padding-top:10px;text-align:right;font-size:18px;font-weight:800}
+.week-budget{border-top:1px solid #eee;margin-top:10px;padding-top:9px;font-size:14px;line-height:1.7}
+.remaining{font-size:18px;font-weight:800}.warning{font-weight:700;margin-top:5px}
+.counted-note{font-size:12px;color:#888}
+.summary-header{display:grid;grid-template-columns:68px 1fr 68px;gap:6px;align-items:center}
+.summary-header button{min-height:36px;background:#fff;color:#333;border:1px solid #ddd;font-size:12px;padding:6px}
+.summary-month{text-align:center;font-weight:800}
+.summary-total{background:#f7f7f7;border-radius:10px;padding:10px;font-size:14px;line-height:1.8}
+.category-row{display:flex;justify-content:space-between;padding:8px 2px;border-bottom:1px solid #eee;font-size:14px}
+.small-note{font-size:12px;color:#777;line-height:1.5}
+.bottom-tabs{position:fixed;z-index:1000;bottom:8px;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 16px));display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px;background:rgba(255,255,255,.97);border:1px solid #ddd;border-radius:16px;box-shadow:0 5px 20px rgba(0,0,0,.12);backdrop-filter:blur(10px)}
+.tab-button{min-height:52px;background:transparent;color:#666;font-size:12px;padding:5px;border-radius:11px}
+.tab-button.active{background:#333;color:#fff}
+.tab-icon{display:block;font-size:19px;margin-bottom:2px}
+.tab-section{display:none}.tab-section.active{display:block}
+.settings-group{border-bottom:1px solid #eee;padding-bottom:14px;margin-bottom:14px}.settings-group:last-child{border:0;margin-bottom:0}
+.inline-setting{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center}
+.small-button{width:auto;min-width:65px;min-height:42px;font-size:13px}
+.inline-setting input[type=color]{width:58px;min-width:58px;padding:3px}
+.settings-list{margin-bottom:7px}.setting-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #eee;font-size:14px}
+.setting-item button{width:auto;min-height:34px;padding:6px 10px;font-size:12px;background:#aaa}
+@media(max-width:380px){body{padding-left:7px;padding-right:7px}.card{padding:13px}.current-date{font-size:15px}.date-navigation{grid-template-columns:66px 1fr 66px}}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 id="appTitle">バフェットの知恵袋</h1>
+<nav class="bottom-tabs">
+<button class="tab-button active" data-tab="expensesTab" onclick="switchTab('expensesTab')"><span class="tab-icon">💸</span>支出</button>
+<button class="tab-button" data-tab="incomeTab" onclick="switchTab('incomeTab')"><span class="tab-icon">💰</span>収入</button>
+<button class="tab-button" data-tab="settingsTab" onclick="switchTab('settingsTab')"><span class="tab-icon">⚙️</span>設定</button>
+</nav>
+
+
+<!-- 日付 -->
+<div class="date-navigation">
+    <button onclick="changeDate(-1)">← 前の日</button>
+
+    <div class="current-date" id="currentDate"></div>
+
+    <button onclick="changeDate(1)">次の日 →</button>
+</div>
+
+<div class="date-tools">
+    <button onclick="goToday()">今日</button>
+
+    <label class="calendar-label" for="calendarPicker">日付</label>
+
+    <input
+        type="date"
+        id="calendarPicker"
+        onchange="selectDate(this.value)"
+    >
+</div>
+
+<!-- 今日の支出 -->
+<div class="card">
+    <h2>今日の支出</h2>
+    <div id="expenseList"></div>
+
+    <div class="total">
+        合計 ¥<span id="todayTotal">0</span>
+    </div>
+</div>
+
+<!-- 支出追加 -->
+<div class="card">
+    <button onclick="startNewExpense()">＋ 支出を追加</button>
+
+    <div class="form-area" id="expenseFormArea">
+        <h2 id="formTitle">支出を追加</h2>
+
+        <label>どこで？</label>
+        <input type="text" id="place" placeholder="例：セブンイレブン">
+
+        <label>いくら？</label>
+        <input type="number" id="amount" placeholder="例：180">
+
+        <label>何に？</label>
+        <input type="text" id="description" placeholder="例：おにぎり">
+
+        <label>支払い方法</label>
+        <select id="payment">
+            <option>現金</option>
+            <option>クレジットカード</option>
+            <option>PayPay</option>
+            <option>スタバカード</option>
+            <option>QUICPay</option>
+            <option>福岡空港Pay</option>
+            <option>その他</option>
+        </select>
+
+        <label>計上</label>
+        <select id="counted">
+            <option value="true">計上あり</option>
+            <option value="false">計上なし</option>
+        </select>
+
+        <label>カテゴリー</label>
+        <select id="category">
+            <option>食費</option>
+            <option>外食費</option>
+            <option>交通費</option>
+            <option>日用品</option>
+            <option>自己投資</option>
+            <option>旅行</option>
+            <option>その他</option>
+        </select>
+
+        <button class="register-button" onclick="saveExpense()" id="saveExpenseButton">
+            登録する
+        </button>
+
+        <button class="cancel-button" onclick="hideExpenseForm()">
+            キャンセル
+        </button>
+    </div>
+</div>
+
+<!-- 今日の収入 -->
+<div class="card">
+    <h2>今日の収入</h2>
+    <div id="incomeList"></div>
+
+    <div class="total income-total">
+        合計 ¥<span id="todayIncomeTotal">0</span>
+    </div>
+
+    <div class="balance-box">
+        今日の収支 ¥<span id="todayBalance">0</span>
+    </div>
+</div>
+
+<!-- 収入追加 -->
+<div class="card">
+    <button onclick="startNewIncome()">＋ 収入を追加</button>
+
+    <div class="form-area" id="incomeFormArea">
+        <h2 id="incomeFormTitle">収入を追加</h2>
+
+        <label>どこから？</label>
+        <input type="text" id="incomeSource" placeholder="例：会社">
+
+        <label>いくら？</label>
+        <input type="number" id="incomeAmount" placeholder="例：220000">
+
+        <label>何の収入？</label>
+        <input type="text" id="incomeDescription" placeholder="例：給与">
+
+        <button class="register-button" onclick="saveIncome()" id="saveIncomeButton">
+            登録する
+        </button>
+
+        <button class="cancel-button" onclick="hideIncomeForm()">
+            キャンセル
+        </button>
+    </div>
+</div>
+
+<!-- 週間集計 -->
+<div class="card">
+    <h2>今週の支出</h2>
+    <p id="weekPeriod"></p>
+
+    <div id="weekList"></div>
+
+    <div class="week-total">
+        週間合計 ¥<span id="weekTotal">0</span>
+    </div>
+
+    <div class="week-budget">
+        基本週間予算 ¥30,000
+        <br>
+        今週の予算 ¥<span id="weekBudget">30,000</span>
+        <br>
+
+        <div class="remaining">
+            残り ¥<span id="weekRemaining">30,000</span>
+        </div>
+
+        <div class="warning" id="budgetWarning"></div>
+    </div>
+</div>
+
+<!-- 月次サマリー -->
+<div class="card">
+    <div class="summary-header">
+        <button onclick="changeSummaryMonth(-1)">← 前月</button>
+        <div class="summary-month" id="summaryMonth"></div>
+        <button onclick="changeSummaryMonth(1)">次月 →</button>
+    </div>
+
+    <div class="summary-total" style="margin-top:15px;">
+        支出 ¥<span id="monthlyExpenseTotal">0</span><br>
+        収入 ¥<span id="monthlyIncomeTotal">0</span><br>
+        収支 ¥<span id="monthlyBalance">0</span>
+    </div>
+
+    <h3>カテゴリー別支出</h3>
+    <div id="categorySummary"></div>
+</div>
+
+<!-- 設定 -->
+<div class="card">
+    <h2>設定</h2>
+
+    <div class="settings-row">
+        <label>タイトル</label>
+        <input
+            type="text"
+            id="titleSetting"
+            value="バフェットの知恵袋"
+            onchange="changeTitle(this.value)"
+        >
+    </div>
+
+    <div class="settings-row">
+        <label>背景カラー</label>
+        <select id="backgroundSetting" onchange="changeBackground(this.value)">
+            <option value="#f5f5f5">ライトグレー</option>
+            <option value="#ffffff">ホワイト</option>
+            <option value="#eef5ff">ライトブルー</option>
+            <option value="#eef8ef">ライトグリーン</option>
+            <option value="#fff8e8">クリーム</option>
+        </select>
+    </div>
+
+    <div class="small-note">
+        設定はこの端末のブラウザに保存されます。
+    </div>
+</div>
+
+</div>
+
+<script>
+/* ================================
+   データ
+================================ */
+
+let expenses =
+    JSON.parse(localStorage.getItem("expenses")) || [];
+
+let incomes =
+    JSON.parse(localStorage.getItem("incomes")) || [];
+
+let editingExpenseId = null;
+let editingIncomeId = null;
+
+/* 既存支出にIDがない場合は自動付与 */
+let expenseDataChanged = false;
+
+expenses.forEach(expense => {
+    if (!expense.id) {
+        expense.id =
+            Date.now().toString() +
+            Math.random().toString(36).slice(2);
+        expenseDataChanged = true;
+    }
+});
+
+if (expenseDataChanged) {
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+}
+
+/* 収入にもIDを付与 */
+let incomeDataChanged = false;
+
+incomes.forEach(income => {
+    if (!income.id) {
+        income.id =
+            Date.now().toString() +
+            Math.random().toString(36).slice(2);
+        incomeDataChanged = true;
+    }
+});
+
+if (incomeDataChanged) {
+    localStorage.setItem("incomes", JSON.stringify(incomes));
+}
+
+/* 表示中の日付 */
+let currentDate = new Date();
+
+/* 月次サマリーで表示する月 */
+let summaryMonth =
+    new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        1
+    );
+
+/* 基本週間予算 */
+const BASE_BUDGET = 30000;
+
+/* ================================
+   共通
+================================ */
+
+function dateToString(date) {
+    const year = date.getFullYear();
+
+    const month =
+        String(date.getMonth() + 1).padStart(2, "0");
+
+    const day =
+        String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+function displayDate(date) {
+    const weekDays = [
+        "日", "月", "火", "水", "木", "金", "土"
+    ];
+
+    return `${date.getFullYear()}年${
+        date.getMonth() + 1
+    }月${
+        date.getDate()
+    }日（${
+        weekDays[date.getDay()]
+    }）`;
+}
+
+/* ================================
+   日付
+================================ */
+
+function changeDate(number) {
+    currentDate.setDate(
+        currentDate.getDate() + number
+    );
+
+    displayAll();
+}
+
+function goToday() {
+    currentDate = new Date();
+
+    displayAll();
+}
+
+function selectDate(value) {
+    if (!value) return;
+
+    currentDate =
+        new Date(value + "T00:00:00");
+
+    displayAll();
+}
+
+/* ================================
+   支出フォーム
+================================ */
+
+function startNewExpense() {
+    resetExpenseForm();
+    document.getElementById("expenseFormArea").style.display = "block";
+}
+
+function hideExpenseForm() {
+    document.getElementById("expenseFormArea").style.display = "none";
+    resetExpenseForm();
+}
+
+function resetExpenseForm() {
+    editingExpenseId = null;
+
+    document.getElementById("place").value = "";
+    document.getElementById("amount").value = "";
+    document.getElementById("description").value = "";
+
+    document.getElementById("payment").selectedIndex = 0;
+    document.getElementById("category").selectedIndex = 0;
+    document.getElementById("counted").value = "true";
+
+    document.getElementById("formTitle").textContent = "支出を追加";
+    document.getElementById("saveExpenseButton").textContent = "登録する";
+}
+
+function saveExpense() {
+    const place =
+        document.getElementById("place").value.trim();
+
+    const amount =
+        Number(document.getElementById("amount").value);
+
+    const description =
+        document.getElementById("description").value.trim();
+
+    const payment =
+        document.getElementById("payment").value;
+
+    const category =
+        document.getElementById("category").value;
+
+    const counted =
+        document.getElementById("counted").value === "true";
+
+    if (!place || !amount || !description) {
+        alert("「どこで？」「いくら？」「何に？」を入力してください。");
+        return;
+    }
+
+    if (editingExpenseId !== null) {
+        const index =
+            expenses.findIndex(
+                expense =>
+                    String(expense.id) === String(editingExpenseId)
+            );
+
+        if (index !== -1) {
+            expenses[index] = {
+                ...expenses[index],
+                place,
+                amount,
+                description,
+                payment,
+                category,
+                counted
+            };
+        }
+    } else {
+        expenses.push({
+            id:
+                Date.now().toString() +
+                Math.random().toString(36).slice(2),
+            date: dateToString(currentDate),
+            place,
+            amount,
+            description,
+            payment,
+            category,
+            counted
+        });
+    }
+
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+
+    hideExpenseForm();
+    displayAll();
+}
+
+function editExpense(id) {
+    const expense =
+        expenses.find(
+            item => String(item.id) === String(id)
+        );
+
+    if (!expense) return;
+
+    editingExpenseId = expense.id;
+
+    document.getElementById("place").value = expense.place;
+    document.getElementById("amount").value = expense.amount;
+    document.getElementById("description").value = expense.description;
+    document.getElementById("payment").value = expense.payment;
+    document.getElementById("category").value = expense.category;
+    document.getElementById("counted").value =
+        expense.counted === false ? "false" : "true";
+
+    document.getElementById("formTitle").textContent = "支出を編集";
+    document.getElementById("saveExpenseButton").textContent = "変更を保存";
+
+    document.getElementById("expenseFormArea").style.display = "block";
+
+    window.scrollTo({
+        top:
+            document.getElementById("expenseFormArea").offsetTop - 20,
+        behavior: "smooth"
+    });
+}
+
+function deleteExpense(id) {
+    const expense =
+        expenses.find(
+            item => String(item.id) === String(id)
+        );
+
+    if (!expense) return;
+
+    if (!confirm(
+        `${expense.place} の ¥${expense.amount.toLocaleString()} を削除しますか？`
+    )) {
+        return;
+    }
+
+    expenses =
+        expenses.filter(
+            item => String(item.id) !== String(id)
+        );
+
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+
+    displayAll();
+}
+
+/* ================================
+   収入フォーム
+================================ */
+
+function startNewIncome() {
+    resetIncomeForm();
+    document.getElementById("incomeFormArea").style.display = "block";
+}
+
+function hideIncomeForm() {
+    document.getElementById("incomeFormArea").style.display = "none";
+    resetIncomeForm();
+}
+
+function resetIncomeForm() {
+    editingIncomeId = null;
+
+    document.getElementById("incomeSource").value = "";
+    document.getElementById("incomeAmount").value = "";
+    document.getElementById("incomeDescription").value = "";
+
+    document.getElementById("incomeFormTitle").textContent = "収入を追加";
+    document.getElementById("saveIncomeButton").textContent = "登録する";
+}
+
+function saveIncome() {
+    const source =
+        document.getElementById("incomeSource").value.trim();
+
+    const amount =
+        Number(document.getElementById("incomeAmount").value);
+
+    const description =
+        document.getElementById("incomeDescription").value.trim();
+
+    if (!source || !amount || !description) {
+        alert("「どこから？」「いくら？」「何の収入？」を入力してください。");
+        return;
+    }
+
+    if (editingIncomeId !== null) {
+        const index =
+            incomes.findIndex(
+                income =>
+                    String(income.id) === String(editingIncomeId)
+            );
+
+        if (index !== -1) {
+            incomes[index] = {
+                ...incomes[index],
+                source,
+                amount,
+                description
+            };
+        }
+    } else {
+        incomes.push({
+            id:
+                Date.now().toString() +
+                Math.random().toString(36).slice(2),
+            date: dateToString(currentDate),
+            source,
+            amount,
+            description
+        });
+    }
+
+    localStorage.setItem("incomes", JSON.stringify(incomes));
+
+    hideIncomeForm();
+    displayAll();
+}
+
+function editIncome(id) {
+    const income =
+        incomes.find(
+            item => String(item.id) === String(id)
+        );
+
+    if (!income) return;
+
+    editingIncomeId = income.id;
+
+    document.getElementById("incomeSource").value = income.source;
+    document.getElementById("incomeAmount").value = income.amount;
+    document.getElementById("incomeDescription").value = income.description;
+
+    document.getElementById("incomeFormTitle").textContent = "収入を編集";
+    document.getElementById("saveIncomeButton").textContent = "変更を保存";
+
+    document.getElementById("incomeFormArea").style.display = "block";
+
+    window.scrollTo({
+        top:
+            document.getElementById("incomeFormArea").offsetTop - 20,
+        behavior: "smooth"
+    });
+}
+
+function deleteIncome(id) {
+    const income =
+        incomes.find(
+            item => String(item.id) === String(id)
+        );
+
+    if (!income) return;
+
+    if (!confirm(
+        `${income.source} の ¥${income.amount.toLocaleString()} を削除しますか？`
+    )) {
+        return;
+    }
+
+    incomes =
+        incomes.filter(
+            item => String(item.id) !== String(id)
+        );
+
+    localStorage.setItem("incomes", JSON.stringify(incomes));
+
+    displayAll();
+}
+
+/* ================================
+   今日の表示
+================================ */
+
+function displayToday() {
+    const date = dateToString(currentDate);
+
+    const todayExpenses =
+        expenses.filter(
+            expense => expense.date === date
+        );
+
+    const expenseList =
+        document.getElementById("expenseList");
+
+    expenseList.innerHTML = "";
+
+    let total = 0;
+
+    if (todayExpenses.length === 0) {
+        expenseList.innerHTML =
+            '<div class="empty">支出はありません</div>';
+    }
+
+    todayExpenses.forEach(expense => {
+        const newExpense =
+            document.createElement("div");
+
+        newExpense.className = "expense";
+
+        newExpense.innerHTML = `
+            <div class="place">${escapeHtml(expense.place)}</div>
+
+            <div class="amount">
+                ¥${expense.amount.toLocaleString()}
+            </div>
+
+            <div class="detail">
+                ${escapeHtml(expense.description)}<br>
+                ${escapeHtml(expense.payment)}<br>
+                ${escapeHtml(expense.category)}<br>
+                <span class="counted-note">
+                    ${
+                        expense.counted === false
+                        ? "※ 計上なし（集計対象外）"
+                        : "計上あり"
+                    }
+                </span>
+            </div>
+
+            <div class="expense-actions">
+                <button
+                    class="edit-button"
+                    onclick="editExpense('${expense.id}')">
+                    編集
+                </button>
+
+                <button
+                    class="delete-button"
+                    onclick="deleteExpense('${expense.id}')">
+                    削除
+                </button>
+            </div>
+        `;
+
+        expenseList.appendChild(newExpense);
+
+        if (expense.counted !== false) {
+            total += expense.amount;
+        }
+    });
+
+    document.getElementById("todayTotal").textContent =
+        total.toLocaleString();
+}
+
+function displayTodayIncome() {
+    const date = dateToString(currentDate);
+
+    const todayIncomes =
+        incomes.filter(
+            income => income.date === date
+        );
+
+    const incomeList =
+        document.getElementById("incomeList");
+
+    incomeList.innerHTML = "";
+
+    let total = 0;
+
+    if (todayIncomes.length === 0) {
+        incomeList.innerHTML =
+            '<div class="empty">収入はありません</div>';
+    }
+
+    todayIncomes.forEach(income => {
+        const newIncome =
+            document.createElement("div");
+
+        newIncome.className = "income";
+
+        newIncome.innerHTML = `
+            <div class="place">${escapeHtml(income.source)}</div>
+
+            <div class="amount income-amount">
+                ¥${income.amount.toLocaleString()}
+            </div>
+
+            <div class="detail">
+                ${escapeHtml(income.description)}
+            </div>
+
+            <div class="expense-actions">
+                <button
+                    class="edit-button"
+                    onclick="editIncome('${income.id}')">
+                    編集
+                </button>
+
+                <button
+                    class="delete-button"
+                    onclick="deleteIncome('${income.id}')">
+                    削除
+                </button>
+            </div>
+        `;
+
+        incomeList.appendChild(newIncome);
+        total += income.amount;
+    });
+
+    document.getElementById("todayIncomeTotal").textContent =
+        total.toLocaleString();
+
+    const expenseTotal =
+        expenses
+        .filter(
+            expense =>
+                expense.date === date &&
+                expense.counted !== false
+        )
+        .reduce(
+            (sum, expense) => sum + expense.amount,
+            0
+        );
+
+    document.getElementById("todayBalance").textContent =
+        (total - expenseTotal).toLocaleString();
+}
+
+/* HTML特殊文字対策 */
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+/* ================================
+   週間
+================================ */
+
+function getMonday(date) {
+    const monday = new Date(date);
+
+    const day = monday.getDay();
+
+    const daysFromMonday =
+        day === 0 ? 6 : day - 1;
+
+    monday.setDate(
+        monday.getDate() - daysFromMonday
+    );
+
+    monday.setHours(0, 0, 0, 0);
+
+    return monday;
+}
+
+function getWeekTotal(date) {
+    const monday = getMonday(date);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    return expenses
+        .filter(expense => {
+            const expenseDate =
+                new Date(expense.date + "T00:00:00");
+
+            return (
+                expenseDate >= monday &&
+                expenseDate <= sunday &&
+                expense.counted !== false
+            );
+        })
+        .reduce(
+            (sum, expense) => sum + expense.amount,
+            0
+        );
+}
+
+function getPreviousWeekTotal(date) {
+    const monday = getMonday(date);
+
+    const previousMonday = new Date(monday);
+    previousMonday.setDate(monday.getDate() - 7);
+
+    const previousSunday = new Date(previousMonday);
+    previousSunday.setDate(previousMonday.getDate() + 6);
+    previousSunday.setHours(23, 59, 59, 999);
+
+    return expenses
+        .filter(expense => {
+            const expenseDate =
+                new Date(expense.date + "T00:00:00");
+
+            return (
+                expenseDate >= previousMonday &&
+                expenseDate <= previousSunday &&
+                expense.counted !== false
+            );
+        })
+        .reduce(
+            (sum, expense) => sum + expense.amount,
+            0
+        );
+}
+
+function getCurrentWeekBudget(date) {
+    const monday = getMonday(date);
+
+    // その週より前に記録がない場合は、通常の30,000円から開始
+    const countedExpenses = expenses.filter(
+        expense => expense.counted !== false
+    );
+
+    if (countedExpenses.length === 0) {
+        return BASE_BUDGET;
+    }
+
+    let firstDate = new Date(
+        countedExpenses[0].date + "T00:00:00"
+    );
+
+    countedExpenses.forEach(expense => {
+        const d = new Date(expense.date + "T00:00:00");
+        if (d < firstDate) firstDate = d;
+    });
+
+    const firstMonday = getMonday(firstDate);
+
+    // 最初の記録より前の週には、繰越は存在しないものとして扱う
+    if (monday <= firstMonday) {
+        return BASE_BUDGET;
+    }
+
+    // 前週の「予算 - 支出」で残りを求める
+    const previousMonday = new Date(monday);
+    previousMonday.setDate(previousMonday.getDate() - 7);
+
+    const previousBudget =
+        getCurrentWeekBudget(previousMonday);
+
+    const previousWeekTotal =
+        getWeekTotal(previousMonday);
+
+    const previousRemaining =
+        previousBudget - previousWeekTotal;
+
+    // 赤字だけ翌週へ持ち越す。
+    // 黒字なら翌週は30,000円にリセット。
+    if (previousRemaining < 0) {
+        return BASE_BUDGET + previousRemaining;
+    }
+
+    return BASE_BUDGET;
+}
+
+function displayWeek() {
+    const monday = getMonday(currentDate);
+
+    const weekDates = [];
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+
+        date.setDate(
+            monday.getDate() + i
+        );
+
+        weekDates.push(date);
+    }
+
+    const weekList =
+        document.getElementById("weekList");
+
+    weekList.innerHTML = "";
+
+    let weekTotal = 0;
+
+    const weekDays = [
+        "日", "月", "火", "水", "木", "金", "土"
+    ];
+
+    weekDates.forEach(date => {
+        const dateString = dateToString(date);
+
+        const dayTotal =
+            expenses
+            .filter(
+                expense =>
+                    expense.date === dateString &&
+                    expense.counted !== false
+            )
+            .reduce(
+                (sum, expense) => sum + expense.amount,
+                0
+            );
+
+        weekTotal += dayTotal;
+
+        const row =
+            document.createElement("div");
+
+        row.className = "week-row";
+
+        row.innerHTML = `
+            <span>
+                ${date.getMonth() + 1}/${date.getDate()}
+                （${weekDays[date.getDay()]}）
+            </span>
+            <span>¥${dayTotal.toLocaleString()}</span>
+        `;
+
+        weekList.appendChild(row);
+    });
+
+    document.getElementById("weekTotal").textContent =
+        weekTotal.toLocaleString();
+
+    const budget =
+        getCurrentWeekBudget(currentDate);
+
+    document.getElementById("weekBudget").textContent =
+        budget.toLocaleString();
+
+    const remaining = budget - weekTotal;
+
+    document.getElementById("weekRemaining").textContent =
+        remaining.toLocaleString();
+
+    const warning =
+        document.getElementById("budgetWarning");
+
+    if (remaining < 0) {
+        warning.textContent =
+            "⚠️ 予算オーバー ¥" +
+            Math.abs(remaining).toLocaleString();
+    } else {
+        warning.textContent = "";
+    }
+
+    document.getElementById("weekPeriod").textContent =
+        `${monday.getMonth() + 1}/${monday.getDate()} 〜 ${
+            weekDates[6].getMonth() + 1
+        }/${weekDates[6].getDate()}`;
+}
+
+/* ================================
+   月次サマリー
+================================ */
+
+function changeSummaryMonth(number) {
+    summaryMonth.setMonth(
+        summaryMonth.getMonth() + number
+    );
+
+    displayMonthlySummary();
+}
+
+function displayMonthlySummary() {
+    const year = summaryMonth.getFullYear();
+    const month = summaryMonth.getMonth();
+
+    document.getElementById("summaryMonth").textContent =
+        `${year}年${month + 1}月`;
+
+    const monthPrefix =
+        `${year}-${String(month + 1).padStart(2, "0")}`;
+
+    const monthlyExpenses =
+        expenses.filter(
+            expense =>
+                expense.date.startsWith(monthPrefix) &&
+                expense.counted !== false
+        );
+
+    const monthlyIncomes =
+        incomes.filter(
+            income =>
+                income.date.startsWith(monthPrefix)
+        );
+
+    const expenseTotal =
+        monthlyExpenses.reduce(
+            (sum, expense) => sum + expense.amount,
+            0
+        );
+
+    const incomeTotal =
+        monthlyIncomes.reduce(
+            (sum, income) => sum + income.amount,
+            0
+        );
+
+    document.getElementById("monthlyExpenseTotal").textContent =
+        expenseTotal.toLocaleString();
+
+    document.getElementById("monthlyIncomeTotal").textContent =
+        incomeTotal.toLocaleString();
+
+    document.getElementById("monthlyBalance").textContent =
+        (incomeTotal - expenseTotal).toLocaleString();
+
+    const categoryTotals = {};
+
+    monthlyExpenses.forEach(expense => {
+        const category =
+            expense.category || "その他";
+
+        categoryTotals[category] =
+            (categoryTotals[category] || 0) +
+            expense.amount;
+    });
+
+    const categorySummary =
+        document.getElementById("categorySummary");
+
+    categorySummary.innerHTML = "";
+
+    const categories = [
+        "食費",
+        "外食費",
+        "交通費",
+        "日用品",
+        "自己投資",
+        "旅行",
+        "その他"
+    ];
+
+    let hasCategory = false;
+
+    categories.forEach(category => {
+        const total =
+            categoryTotals[category] || 0;
+
+        if (total > 0) {
+            hasCategory = true;
+
+            const row =
+                document.createElement("div");
+
+            row.className = "category-row";
+
+            row.innerHTML = `
+                <span>${category}</span>
+                <span>¥${total.toLocaleString()}</span>
+            `;
+
+            categorySummary.appendChild(row);
+        }
+    });
+
+    if (!hasCategory) {
+        categorySummary.innerHTML =
+            '<div class="empty">計上された支出はありません</div>';
+    }
+}
+
+/* ================================
+   設定
+================================ */
+
+function changeTitle(value) {
+    const title =
+        value.trim() || "バフェットの知恵袋";
+
+    document.getElementById("appTitle").textContent =
+        title;
+
+    document.getElementById("titleSetting").value =
+        title;
+
+    localStorage.setItem(
+        "appTitle",
+        title
+    );
+
+    document.title = title;
+}
+
+function changeBackground(value) {
+    document.body.style.background = value;
+
+    localStorage.setItem(
+        "backgroundColor",
+        value
+    );
+}
+
+function loadSettings() {
+    const savedTitle =
+        localStorage.getItem("appTitle");
+
+    const savedBackground =
+        localStorage.getItem("backgroundColor");
+
+    if (savedTitle) {
+        document.getElementById("appTitle").textContent =
+            savedTitle;
+
+        document.getElementById("titleSetting").value =
+            savedTitle;
+
+        document.title = savedTitle;
+    }
+
+    if (savedBackground) {
+        document.body.style.background =
+            savedBackground;
+
+        document.getElementById("backgroundSetting").value =
+            savedBackground;
+    }
+}
+
+/* ================================
+   全画面更新
+================================ */
+
+function displayAll() {
+    document.getElementById("currentDate").textContent =
+        displayDate(currentDate);
+
+    const calendarPicker =
+        document.getElementById("calendarPicker");
+
+    if (calendarPicker) {
+        calendarPicker.value =
+            dateToString(currentDate);
+    }
+
+    displayToday();
+    displayTodayIncome();
+    displayWeek();
+    displayMonthlySummary();
+}
+
+/* 起動 */
+loadSettings();
+displayAll();
+
+
+const BK_PAYMENT_DEFAULTS=["現金","クレジットカード","PayPay","QUICPay","スタバカード","福岡空港Pay","その他"];
+const BK_CATEGORY_DEFAULTS=["食費","外食費","交通費","日用品","自己投資","旅行","娯楽","その他"];
+
+function bkList(key,defaults){
+ const v=JSON.parse(localStorage.getItem(key)||"null");
+ return Array.isArray(v)&&v.length?v:[...defaults];
+}
+function bkSave(key,v){localStorage.setItem(key,JSON.stringify(v))}
+function bkEsc(v){return String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+
+function refreshCustomLists(){
+ const p=document.getElementById("payment");
+ const c=document.getElementById("category");
+ if(p){
+  const old=p.value, a=bkList("paymentMethods",BK_PAYMENT_DEFAULTS);
+  p.innerHTML=a.map(x=>`<option>${bkEsc(x)}</option>`).join("");
+  if(a.includes(old))p.value=old;
+ }
+ if(c){
+  const old=c.value, a=bkList("categories",BK_CATEGORY_DEFAULTS);
+  c.innerHTML=a.map(x=>`<option>${bkEsc(x)}</option>`).join("");
+  if(a.includes(old))c.value=old;
+ }
+}
+function renderSettingLists(){
+ const p=document.getElementById("paymentMethodList"), c=document.getElementById("categoryList");
+ if(p)p.innerHTML=bkList("paymentMethods",BK_PAYMENT_DEFAULTS).map((x,i)=>`<div class="setting-item"><span>${bkEsc(x)}</span><button onclick="removePaymentMethod(${i})">削除</button></div>`).join("");
+ if(c)c.innerHTML=bkList("categories",BK_CATEGORY_DEFAULTS).map((x,i)=>`<div class="setting-item"><span>${bkEsc(x)}</span><button onclick="removeCategory(${i})">削除</button></div>`).join("");
+}
+function addPaymentMethod(){
+ const i=document.getElementById("newPaymentMethod"),v=i.value.trim();if(!v)return;
+ const a=bkList("paymentMethods",BK_PAYMENT_DEFAULTS);if(a.includes(v)){alert("同じ支払い方法がすでにあります。");return}
+ a.push(v);bkSave("paymentMethods",a);i.value="";refreshCustomLists();renderSettingLists();
+}
+function removePaymentMethod(i){
+ const a=bkList("paymentMethods",BK_PAYMENT_DEFAULTS);if(a.length<=1)return;
+ if(!confirm(`「${a[i]}」を削除しますか？`))return;a.splice(i,1);bkSave("paymentMethods",a);refreshCustomLists();renderSettingLists();
+}
+function addCategory(){
+ const i=document.getElementById("newCategory"),v=i.value.trim();if(!v)return;
+ const a=bkList("categories",BK_CATEGORY_DEFAULTS);if(a.includes(v)){alert("同じカテゴリーがすでにあります。");return}
+ a.push(v);bkSave("categories",a);i.value="";refreshCustomLists();renderSettingLists();
+}
+function removeCategory(i){
+ const a=bkList("categories",BK_CATEGORY_DEFAULTS);if(a.length<=1)return;
+ if(!confirm(`「${a[i]}」を削除しますか？`))return;a.splice(i,1);bkSave("categories",a);refreshCustomLists();renderSettingLists();
+}
+function saveAppTitle(){
+ const v=document.getElementById("appTitleInput").value.trim();if(!v)return;
+ localStorage.setItem("appTitle",v);const h=document.querySelector("h1");if(h)h.textContent=v;
+}
+function saveBackgroundColor(){
+ const v=document.getElementById("backgroundColorInput").value;localStorage.setItem("backgroundColor",v);document.body.style.background=v;
+}
+function switchTab(id){
+ document.querySelectorAll(".tab-section").forEach(x=>x.classList.remove("active"));
+ const t=document.getElementById(id);if(t)t.classList.add("active");
+ document.querySelectorAll(".tab-button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));
+}
+function buildTabs(){
+ const cards=[...document.querySelectorAll(".card")];
+ const shell=document.querySelector(".container")||document.body;
+ const settings=document.getElementById("settingsTab");
+ if(!settings)return;
+ const exp=document.createElement("section");exp.id="expensesTab";exp.className="tab-section active";
+ const inc=document.createElement("section");inc.id="incomeTab";inc.className="tab-section";
+ cards.forEach(card=>{
+  if(card.closest("#settingsTab"))return;
+  const t=card.innerText||"";
+  if(t.includes("今日の収入")||t.includes("収入を追加"))inc.appendChild(card);
+  else exp.appendChild(card);
+ });
+ shell.insertBefore(exp,settings);shell.insertBefore(inc,settings);
+}
+window.addEventListener("load",()=>{
+ buildTabs();
+ refreshCustomLists();
+ renderSettingLists();
+ const title=localStorage.getItem("appTitle");if(title){const h=document.querySelector("h1");if(h)h.textContent=title;document.getElementById("appTitleInput").value=title}
+ const bg=localStorage.getItem("backgroundColor");if(bg){document.body.style.background=bg;document.getElementById("backgroundColorInput").value=bg}
+ switchTab("expensesTab");
+});
+</script>
+
+
+<section id="settingsTab" class="tab-section">
+<div class="card">
+<div class="section-title"><h2>設定</h2></div>
+<div class="settings-group">
+<h3>アプリ</h3>
+<label>タイトル</label>
+<div class="inline-setting"><input id="appTitleInput" maxlength="30" placeholder="バフェットの知恵袋"><button class="small-button" onclick="saveAppTitle()">保存</button></div>
+<label>背景カラー</label>
+<div class="inline-setting"><input id="backgroundColorInput" type="color" value="#f3f4f6"><button class="small-button" onclick="saveBackgroundColor()">適用</button></div>
+</div>
+<div class="settings-group">
+<h3>支払い方法</h3>
+<div id="paymentMethodList" class="settings-list"></div>
+<div class="inline-setting"><input id="newPaymentMethod" maxlength="30" placeholder="例：楽天Pay"><button class="small-button" onclick="addPaymentMethod()">＋追加</button></div>
+<p class="small-note">自分が使う支払い方法だけ登録できます。</p>
+</div>
+<div class="settings-group">
+<h3>カテゴリー</h3>
+<div id="categoryList" class="settings-list"></div>
+<div class="inline-setting"><input id="newCategory" maxlength="30" placeholder="例：美容"><button class="small-button" onclick="addCategory()">＋追加</button></div>
+<p class="small-note">自分専用のカテゴリーを追加できます。</p>
+</div>
+</div>
+</section>
+</body>
+</html>
